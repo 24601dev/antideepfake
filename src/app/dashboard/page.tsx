@@ -11,6 +11,7 @@ interface MatchRowProps {
         date: string;
         score: number | null;
         status: string;
+        thumbnail?: string;
     };
 }
 
@@ -31,12 +32,15 @@ function MatchRow({match}: MatchRowProps) {
         <tr className="hover:bg-white/[0.02] transition-colors">
             <td className="px-4 sm:px-6 py-4">
                 <div className="flex items-center gap-3 sm:gap-4">
-                    <div className={`w-10 h-10 sm:w-12 sm:h-12 shrink-0 rounded flex items-center justify-center overflow-hidden border relative ${match.tag === 'NSFW' ? 'bg-gray-800 border-white/10' : match.tag === 'BLUR' ? 'bg-gray-800 border-white/10' : 'bg-emerald-900/20 border-emerald-500/20'}`}>
-                        {match.tag === 'NSFW' || match.tag === 'BLUR' ? <div className="absolute inset-0 backdrop-blur-md bg-white/5"></div> : null}
-
-                        {match.tag === 'NSFW' && <span className="text-[10px] sm:text-xs text-rose-500 font-bold mix-blend-difference z-10">NSFW</span>}
-                        {match.tag === 'BLUR' && <span className="text-[10px] sm:text-xs text-orange-500 font-bold z-10">BLUR</span>}
-                        {match.tag === 'RESOLVED' && <svg className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>}
+                    <div className="w-10 h-10 sm:w-16 sm:h-16 shrink-0 rounded flex items-center justify-center overflow-hidden border border-white/10 relative group bg-gray-900 cursor-pointer">
+                        {match.thumbnail ? (
+                            <img src={match.thumbnail} className="w-full h-full object-cover blur-md group-hover:blur-none transition-all duration-300 pointer-events-none" alt="Evidence Thumbnail" />
+                        ) : (
+                            <span className="text-[10px] sm:text-xs text-rose-500 font-bold mix-blend-difference z-10">NSFW</span>
+                        )}
+                        <div className="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors flex items-center justify-center pointer-events-none">
+                            <svg className="w-4 h-4 text-white opacity-50 group-hover:opacity-0 transition-opacity drop-shadow-md" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                        </div>
                     </div>
                     <div className="min-w-0">
                         <a

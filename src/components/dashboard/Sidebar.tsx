@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import {usePathname, useRouter} from 'next/navigation';
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
 
 export function Sidebar() {
     const pathname = usePathname();
@@ -16,6 +16,52 @@ export function Sidebar() {
         router.push('/');
     };
 
+    const [matchesCount, setMatchesCount] = useState<number>(0);
+
+    useEffect(() => {
+        // Run once on mount
+        const saved = localStorage.getItem('aegis_scan_results');
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                if (parsed && parsed.length > 0) {
+                    setMatchesCount(parsed.length);
+                }
+            } catch (e) {}
+        }
+
+        // Listen for standard storage events (if changed in another tab)
+        const handleStorageChange = (e: StorageEvent) => {
+            if (e.key === 'aegis_scan_results' && e.newValue) {
+                try {
+                    const parsed = JSON.parse(e.newValue);
+                    setMatchesCount(parsed.length);
+                } catch (e) {}
+            }
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+
+        // Periodically poll for changes within the same tab, since
+        // standard storage events don't trigger when modified by the same window.
+        const pollInterval = setInterval(() => {
+            const raw = localStorage.getItem('aegis_scan_results');
+            if (raw) {
+                try {
+                    const p = JSON.parse(raw);
+                    if (p.length !== matchesCount) {
+                        setMatchesCount(p.length);
+                    }
+                } catch (e) {}
+            }
+        }, 1000);
+
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+            clearInterval(pollInterval);
+        };
+    }, [matchesCount]);
+
     const links = [
         {
             name: 'Overview',
@@ -27,7 +73,7 @@ export function Sidebar() {
             name: 'Detected Matches',
             href: '/dashboard/matches',
             icon: <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>,
-            badge: '3 New'
+            badge: matchesCount > 0 ? `${matchesCount} New` : null
         },
         {
             name: 'Threat Scanner',
