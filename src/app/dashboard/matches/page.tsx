@@ -35,7 +35,13 @@ const mockMatches = [
 ];
 
 // Reusable Evidence Card Component
-function EvidenceCard({match}: {match: any}) {
+interface EvidenceCardProps {
+    match: any;
+    onDismiss?: (id: string, urlDomain: string) => void;
+    onStatusChange?: (id: string, newStatus: string) => void;
+}
+
+function EvidenceCard({match, onDismiss, onStatusChange}: EvidenceCardProps) {
     const [isBlurred, setIsBlurred] = useState(true);
     const [localStatus, setLocalStatus] = useState(match.status);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -46,7 +52,14 @@ function EvidenceCard({match}: {match: any}) {
         setTimeout(() => {
             setIsSubmitting(false);
             setLocalStatus('DMCA Pending');
+            if (onStatusChange) onStatusChange(match.id, 'DMCA Pending');
         }, 1500);
+    };
+
+    const handleDismiss = () => {
+        if (confirm("Dismiss this match? It will be permanently removed from this list.")) {
+            if (onDismiss) onDismiss(match.id, match.url || match.source);
+        }
     };
 
     return (
@@ -146,7 +159,7 @@ function EvidenceCard({match}: {match: any}) {
                             ) : (
                                 <>
                                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                                    Issue Automated DMCA
+                                    Issue DMCA
                                 </>
                             )}
                         </button>
@@ -161,8 +174,11 @@ function EvidenceCard({match}: {match: any}) {
                         </button>
                     )}
 
-                    <button className="px-4 py-2 text-gray-400 hover:text-white text-sm font-semibold transition-colors">
-                        View Technical Logs
+                    <button
+                        onClick={handleDismiss}
+                        className="px-4 py-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg text-sm font-semibold transition-colors ml-auto"
+                    >
+                        Dismiss / Not a Threat
                     </button>
                 </div>
             </div>
@@ -172,6 +188,7 @@ function EvidenceCard({match}: {match: any}) {
 
 export default function MatchesPage() {
     const [matches, setMatches] = useState<any[]>(mockMatches);
+    const [isBulkSubmitting, setIsBulkSubmitting] = useState(false);
 
     useEffect(() => {
         const saved = localStorage.getItem('aegis_scan_results');
@@ -185,6 +202,60 @@ export default function MatchesPage() {
         }
     }, []);
 
+    const handleDismissMatch = (id: string, urlDomain: string) => {
+        // Find the match
+        const matchToRemove = matches.find(m => m.id === id);
+        if (matchToRemove) {
+            // 1. Add it to whitelist if desired
+            // In a perfect world we might ask the user if they want to whitelist this entire domain, or just this exact URL
+            // For now we extract the base domain
+            try {
+                const domain = new URL(matchToRemove.url).hostname;
+                const existingList = JSON.parse(localStorage.getItem('aegis_whitelist') || '[]');
+                if (!existingList.includes(domain)) {
+                    localStorage.setItem('aegis_whitelist', JSON.stringify([...existingList, domain]));
+                }
+            } catch (e) {
+                // Ignore parsing errors
+            }
+        }
+
+        // 2. Remove from active state
+        const updated = matches.filter(m => m.id !== id);
+        setMatches(updated);
+        localStorage.setItem('aegis_scan_results', JSON.stringify(updated));
+    }
+
+    const handleStatusChange = (id: string, newStatus: string) => {
+        setMatches(prev => {
+            const updated = prev.map(m => m.id === id ? {...m, status: newStatus} : m);
+            localStorage.setItem('aegis_scan_results', JSON.stringify(updated));
+            return updated;
+        });
+    }
+
+    const handleClearAll = () => {
+        if (confirm("Are you sure you want to dismiss all displayed matches?")) {
+            setMatches([]);
+            localStorage.setItem('aegis_scan_results', JSON.stringify([]));
+        }
+    };
+
+    const handleBulkDMCA = () => {
+        const actionableMatches = matches.filter(m => m.status === 'Action Required');
+        if (actionableMatches.length === 0) return alert("No matches require action.");
+
+        setIsBulkSubmitting(true);
+        setTimeout(() => {
+            setMatches(prev => {
+                const updated = prev.map(m => m.status === 'Action Required' ? {...m, status: 'DMCA Pending'} : m);
+                localStorage.setItem('aegis_scan_results', JSON.stringify(updated));
+                return updated;
+            });
+            setIsBulkSubmitting(false);
+        }, 2000);
+    };
+
     return (
         <>
             {/* Top Header */}
@@ -194,6 +265,19 @@ export default function MatchesPage() {
                     <p className="text-xs text-gray-400 mt-0.5">Showing {matches.length} high-confidence biometric matches.</p>
                 </div>
                 <div className="flex items-center gap-4">
+                    <button
+                        onClick={handleClearAll}
+                        className="hidden sm:flex items-center gap-2 px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 text-sm font-bold rounded-lg transition-colors"
+                    >
+                        Clear Extracted List
+                    </button>
+                    <button
+                        onClick={handleBulkDMCA}
+                        disabled={isBulkSubmitting || matches.filter(m => m.status === 'Action Required').length === 0}
+                        className="hidden sm:flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold rounded-lg transition-colors shadow-[0_0_15px_rgba(99,102,241,0.3)] disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {isBulkSubmitting ? 'Processing...' : 'Issue Bulk DMCA'}
+                    </button>
                     <button className="hidden sm:flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 text-sm font-bold text-white rounded-lg hover:bg-white/10 transition-colors">
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>
                         Filter Results
@@ -209,9 +293,20 @@ export default function MatchesPage() {
                 </div>
 
                 <div className="space-y-6">
-                    {matches.map((match) => (
-                        <EvidenceCard key={match.id} match={match} />
-                    ))}
+                    {matches.length > 0 ? matches.map((match) => (
+                        <EvidenceCard
+                            key={match.id}
+                            match={match}
+                            onDismiss={handleDismissMatch}
+                            onStatusChange={handleStatusChange}
+                        />
+                    )) : (
+                        <div className="text-center py-20 bg-gray-900/50 rounded-xl border border-white/10">
+                            <svg className="w-12 h-12 text-emerald-500 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            <h3 className="text-xl font-bold text-white mb-2">Systems Clear</h3>
+                            <p className="text-gray-400">No active biometric threats found meeting your confidence threshold.</p>
+                        </div>
+                    )}
                 </div>
             </div>
         </>
