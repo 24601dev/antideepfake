@@ -1,9 +1,10 @@
 'use client';
-import { getStorageKey } from '@/utils/storage';
+import {getStorageKey} from '@/utils/storage';
 
 import Link from 'next/link';
 import {usePathname, useRouter} from 'next/navigation';
 import {useState, useEffect} from 'react';
+import {signOut} from '@/app/(auth)/actions';
 
 export function Sidebar() {
     const pathname = usePathname();
@@ -24,10 +25,12 @@ export function Sidebar() {
         window.dispatchEvent(new Event('aegis_settings_changed'));
     };
 
-    const handleSignOut = () => {
+    const handleSignOut = async () => {
         // Clear the dev backdoor cookie
         document.cookie = "dev_backdoor=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
-        router.push('/');
+        localStorage.removeItem('aegis_current_user');
+
+        await signOut();
     };
 
     const [matchesCount, setMatchesCount] = useState<number>(0);
