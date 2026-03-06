@@ -10,6 +10,7 @@ export default function BiometricsPage() {
     const [hasLoaded, setHasLoaded] = useState(false);
     const [whitelist, setWhitelist] = useState<string[]>([]);
     const [newWhitelistEntry, setNewWhitelistEntry] = useState('');
+    const [matchThreshold, setMatchThreshold] = useState<number>(75);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Load from local storage on mount
@@ -23,16 +24,23 @@ export default function BiometricsPage() {
         if (savedWhitelist) {
             try {setWhitelist(JSON.parse(savedWhitelist));} catch (e) {}
         }
+
+        const savedThreshold = localStorage.getItem('aegis_match_threshold');
+        if (savedThreshold) {
+            try {setMatchThreshold(Number(savedThreshold));} catch (e) {}
+        }
+
         setHasLoaded(true);
     }, []);
 
-    // Save to local storage whenever vectors change
+    // Save to local storage whenever vectors, whitelist, or threshold change
     useEffect(() => {
         if (hasLoaded) {
             localStorage.setItem('aegis_biometric_vectors', JSON.stringify(vectors));
             localStorage.setItem('aegis_whitelist', JSON.stringify(whitelist));
+            localStorage.setItem('aegis_match_threshold', matchThreshold.toString());
         }
-    }, [vectors, whitelist, hasLoaded]);
+    }, [vectors, whitelist, matchThreshold, hasLoaded]);
 
     const handleUploadClick = () => {
         if (!isUploading) {
@@ -303,6 +311,29 @@ export default function BiometricsPage() {
                     ) : (
                         <div className="text-sm text-gray-500 italic">No safe domains configured. Everything is considered hostile.</div>
                     )}
+                </div>
+
+                {/* Scan Sensitivity Settings */}
+                <div className="glass-panel p-6 rounded-2xl border border-white/10 mt-6 md:mt-8">
+                    <h3 className="text-xl font-bold text-white mb-2">Scan Sensitivity (Confidence Threshold)</h3>
+                    <p className="text-sm text-gray-400 mb-6 max-w-2xl">
+                        Only display evidence where the similarity to your biometric vectors meets or exceeds this percentage. Lower thresholds will result in more false positives (e.g., people who look slightly similar).
+                    </p>
+
+                    <div className="flex items-center gap-6">
+                        <input
+                            type="range"
+                            min="50"
+                            max="99"
+                            step="1"
+                            value={matchThreshold}
+                            onChange={(e) => setMatchThreshold(Number(e.target.value))}
+                            className="flex-1 max-w-md h-2 bg-indigo-900/50 rounded-lg appearance-none cursor-pointer accent-indigo-500 touch-none block"
+                        />
+                        <div className="w-20 text-center px-4 py-2 bg-black/50 border border-indigo-500/30 rounded-lg">
+                            <span className="text-lg font-bold text-indigo-400">{matchThreshold}%</span>
+                        </div>
+                    </div>
                 </div>
 
             </div>

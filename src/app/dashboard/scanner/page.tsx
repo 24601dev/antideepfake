@@ -53,14 +53,18 @@ export default function ThreatScanner() {
                 const swarmData = await swarmResponse.json();
                 if (!swarmResponse.ok) throw new Error(swarmData.error || "Swarm scanning failed.");
 
-                // Apply Whitelist Filtering
+                // Apply Whitelist and Confidence Threshold Filtering
                 const rawWhitelist = localStorage.getItem('aegis_whitelist');
                 const whitelist: string[] = rawWhitelist ? JSON.parse(rawWhitelist) : [];
+                const rawThreshold = localStorage.getItem('aegis_match_threshold');
+                const threshold = rawThreshold ? Number(rawThreshold) : 75;
 
                 const filteredMatches = (swarmData.matches || []).filter((m: any) => {
                     const matchUrl = (m.url || '').toLowerCase();
                     const matchSource = (m.source || '').toLowerCase();
-                    return !whitelist.some(w => matchUrl.includes(w) || matchSource.includes(w));
+                    const isWhitelisted = whitelist.some(w => matchUrl.includes(w) || matchSource.includes(w));
+                    const meetsThreshold = m.score === undefined || m.score === null || m.score >= threshold;
+                    return !isWhitelisted && meetsThreshold;
                 });
 
                 const mappedMatches = filteredMatches.map((m: any, idx: number) => ({
