@@ -1,8 +1,12 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #050505;
+  --foreground: #f3f4f6;
+  --primary: #6366f1;
+  --primary-hover: #4f46e5;
+  --surface: #111111;
+  --surface-border: #262626;
 }
 
 @theme inline {
@@ -12,15 +16,28 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  scroll-behavior: smooth;
+}
+
+.glass-panel {
+  background: rgba(17, 17, 17, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Subtle glow effect for heroic elements */
+.neon-glow {
+  box-shadow: 0 0 40px rgba(99, 102, 241, 0.3);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #a5b4fc 0%, #6366f1 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }

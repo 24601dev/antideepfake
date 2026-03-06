@@ -1,0 +1,73 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+}
+
+model User {
+  id               String         @id @default(uuid())
+  email            String         @unique
+  kycStatus        KycStatus      @default(PENDING)
+  stripeCustomerId String?        @unique
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  subscriptions    Subscription[]
+  sourceImages     SourceImage[]
+  matches          Match[]
+}
+
+model Subscription {
+  id                   String             @id @default(uuid())
+  userId               String
+  stripeSubscriptionId String             @unique
+  status               SubscriptionStatus
+  tier                 SubscriptionTier
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model SourceImage {
+  id        String   @id @default(uuid())
+  userId    String
+  vectorId  String   @unique // ID in the vector database
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Match {
+  id              String      @id @default(uuid())
+  userId          String
+  url             String      @unique
+  similarityScore Float
+  status          MatchStatus @default(DETECTED)
+  timestamp       DateTime    @default(now())
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum KycStatus {
+  PENDING
+  VERIFIED
+  FAILED
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  INCOMPLETE
+}
+
+enum SubscriptionTier {
+  BASIC_WEB
+  DEEP_WEB
+  PRIORITY_TAKEDOWNS
+}
+
+enum MatchStatus {
+  DETECTED
+  TAKEDOWN_SENT
+  REMOVED
+}
