@@ -127,7 +127,7 @@ function EvidenceCard({match, onDismiss, onStatusChange}: EvidenceCardProps) {
                         <h3 className="text-lg font-bold text-white break-all">{match.url}</h3>
                     </div>
                     <div className="text-right shrink-0">
-                        <div className="text-2xl font-black text-white">{match.confidence}%</div>
+                        <div className="text-2xl font-black text-white">{match.score ?? match.confidence ?? '--'}%</div>
                         <div className="text-xs text-gray-400 font-medium tracking-wide">MATCH SCORE</div>
                     </div>
                 </div>
