@@ -1,16 +1,24 @@
 'use client';
 
-import {useState} from 'react';
-import {useRouter} from 'next/navigation';
+import {useState, useEffect, Suspense} from 'react';
+import {useRouter, useSearchParams} from 'next/navigation';
 import Link from 'next/link';
 import {login} from '../actions';
 
-export default function LoginPage() {
+function LoginForm() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+        const urlError = searchParams.get('error');
+        if (urlError) {
+            setError(decodeURIComponent(urlError.replace(/\+/g, ' ')));
+        }
+    }, [searchParams]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -120,4 +128,12 @@ export default function LoginPage() {
             </div>
         </div>
     )
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-[#050505]" />}>
+            <LoginForm />
+        </Suspense>
+    );
 }
