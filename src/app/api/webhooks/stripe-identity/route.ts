@@ -2,13 +2,17 @@ import {NextRequest, NextResponse} from 'next/server';
 import Stripe from 'stripe';
 import {PrismaClient} from '@prisma/client';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: '2024-12-18.acacia',
-});
-
-const prisma = new PrismaClient();
+function getPrisma() {
+    if (!(globalThis as any).__prisma) {
+        (globalThis as any).__prisma = new PrismaClient();
+    }
+    return (globalThis as any).__prisma as PrismaClient;
+}
 
 export async function POST(req: NextRequest) {
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+    const prisma = getPrisma();
+
     const payload = await req.text();
     const sig = req.headers.get('stripe-signature') as string;
 
