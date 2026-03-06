@@ -53,7 +53,26 @@ export default function ThreatScanner() {
                 const swarmData = await swarmResponse.json();
                 if (!swarmResponse.ok) throw new Error(swarmData.error || "Swarm scanning failed.");
 
-                setMatches(swarmData.matches || []);
+                const mappedMatches = (swarmData.matches || []).map((m: any, idx: number) => ({
+                    id: Date.now() + idx,
+                    tag: m.tag,
+                    url: m.url,
+                    date: 'Detected just now',
+                    score: m.score,
+                    status: 'Action Required',
+                    thumbnail: m.thumbnail,
+                    type: m.title || 'Unauthorized Likeness',
+                    title: m.title,
+                    source: m.source
+                }));
+
+                setMatches(mappedMatches);
+
+                // Store globally so the "Active Threat Feed" page picks it up!
+                try {
+                    localStorage.setItem('aegis_scan_results', JSON.stringify(mappedMatches));
+                } catch (e) {}
+
                 setGroupedMatches([]); // no longer used
                 setScanState('results');
             } catch (err: any) {
@@ -209,8 +228,8 @@ export default function ThreatScanner() {
                                                 {/* Match Type Tag */}
                                                 <div className="flex flex-col items-end gap-2 shrink-0">
                                                     <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase whitespace-nowrap ${match.tag === 'EXACT'
-                                                            ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                                                            : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                                                        ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                                                        : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
                                                         }`}>
                                                         {match.tag === 'EXACT' ? 'Exact Match' : 'Visual Match'}
                                                     </span>

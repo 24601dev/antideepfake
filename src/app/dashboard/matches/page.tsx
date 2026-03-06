@@ -1,6 +1,6 @@
 'use client';
 
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
 import Link from 'next/link';
 
 // Mock evidence data
@@ -98,8 +98,8 @@ function EvidenceCard({match}: {match: any}) {
                     <div>
                         <div className="flex items-center gap-2 mb-1">
                             <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border uppercase tracking-wider transition-colors ${localStatus === 'Resolved' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                                    localStatus === 'DMCA Pending' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
-                                        'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                                localStatus === 'DMCA Pending' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
+                                    'bg-rose-500/10 text-rose-400 border-rose-500/20'
                                 }`}>
                                 {localStatus}
                             </span>
@@ -165,13 +165,27 @@ function EvidenceCard({match}: {match: any}) {
 }
 
 export default function MatchesPage() {
+    const [matches, setMatches] = useState<any[]>(mockMatches);
+
+    useEffect(() => {
+        const saved = localStorage.getItem('aegis_scan_results');
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                if (parsed && parsed.length > 0) {
+                    setMatches(parsed);
+                }
+            } catch (e) {}
+        }
+    }, []);
+
     return (
         <>
             {/* Top Header */}
             <header className="h-20 border-b border-white/5 px-4 sm:px-8 flex items-center justify-between sticky top-0 bg-[#050505]/80 backdrop-blur-md z-30">
                 <div>
                     <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">Active Threat Feed</h1>
-                    <p className="text-xs text-gray-400 mt-0.5">Showing 3 high-confidence biometric matches.</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Showing {matches.length} high-confidence biometric matches.</p>
                 </div>
                 <div className="flex items-center gap-4">
                     <button className="hidden sm:flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 text-sm font-bold text-white rounded-lg hover:bg-white/10 transition-colors">
@@ -189,7 +203,7 @@ export default function MatchesPage() {
                 </div>
 
                 <div className="space-y-6">
-                    {mockMatches.map((match) => (
+                    {matches.map((match) => (
                         <EvidenceCard key={match.id} match={match} />
                     ))}
                 </div>

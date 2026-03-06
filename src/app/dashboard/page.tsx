@@ -95,9 +95,7 @@ function MatchRow({match}: MatchRowProps) {
 
 export default function DashboardPage() {
     const [isScanning, setIsScanning] = useState(false);
-    const [matches, setMatches] = useState<any[]>([
-        {id: 1, tag: 'RESOLVED', url: 'tg-groups-hub[.]ru', date: 'Removed 3 days ago', score: null, status: 'Successfully Removed'},
-    ]);
+    const [matches, setMatches] = useState<any[]>([]);
     const [vectors, setVectors] = useState<any[]>([]);
     const [scanError, setScanError] = useState<string | null>(null);
 
@@ -107,6 +105,15 @@ export default function DashboardPage() {
             try {
                 setVectors(JSON.parse(savedVectors));
             } catch (e) {}
+        }
+
+        const savedMatches = localStorage.getItem('aegis_scan_results');
+        if (savedMatches) {
+            try {
+                setMatches(JSON.parse(savedMatches));
+            } catch (e) {}
+        } else {
+            setMatches([{id: 1, tag: 'RESOLVED', url: 'tg-groups-hub[.]ru', date: 'Removed 3 days ago', score: null, status: 'Successfully Removed'}]);
         }
     }, []);
 
@@ -143,12 +150,20 @@ export default function DashboardPage() {
                 url: m.url,
                 date: 'Detected just now',
                 score: m.score,
-                status: 'Action Required'
+                status: 'Action Required',
+                thumbnail: m.thumbnail,
+                type: m.title || 'Unauthorized Likeness',
+                title: m.title,
+                source: m.source
             }));
 
             // Only update if we found new matches to prevent empty overwrites
             if (mappedMatches.length > 0) {
-                setMatches(prev => [...mappedMatches, ...prev]);
+                setMatches(prev => {
+                    const newMatches = [...mappedMatches, ...prev];
+                    localStorage.setItem('aegis_scan_results', JSON.stringify(newMatches));
+                    return newMatches;
+                });
             } else {
                 // If it successfully scanned but found nothing
                 setScanError(`Scan completed. ${data.sites_scanned} sites analyzed. 0 matches found.`);
