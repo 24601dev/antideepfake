@@ -12,12 +12,18 @@ export default async function DashboardLayout({
     const cookieStore = await cookies();
     const backdoor = cookieStore.get('dev_backdoor')?.value === 'true';
     let userEmail = 'antideepfake@test.com'; // Default mock test account
+    let userName = 'Test Account';
 
     if (!backdoor) {
         const supabase = await createClient();
         const {data: {user}} = await supabase.auth.getUser();
         if (user && user.email) {
             userEmail = user.email;
+            if (user.user_metadata?.first_name) {
+                userName = `${user.user_metadata.first_name} ${user.user_metadata.last_name || ''}`.trim();
+            } else {
+                userName = user.email.split('@')[0];
+            }
         }
     }
 
@@ -25,7 +31,7 @@ export default async function DashboardLayout({
         <div className="min-h-screen bg-[#050505] text-gray-200 font-sans selection:bg-indigo-500/30 flex flex-col md:flex-row">
             <script
                 dangerouslySetInnerHTML={{
-                    __html: `localStorage.setItem('aegis_current_user', '${userEmail}');`
+                    __html: `localStorage.setItem('aegis_current_user', '${userEmail}'); localStorage.setItem('aegis_user_name', '${userName.replace(/'/g, "\\'")}');`
                 }}
             />
             <MobileHeader />

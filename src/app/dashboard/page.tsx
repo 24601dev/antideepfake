@@ -308,36 +308,42 @@ export default function DashboardPage() {
                             <svg className="w-16 h-16 text-indigo-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" /></svg>
                         </div>
                         <h3 className="text-gray-400 text-sm font-medium mb-1">Total Scanned Sites</h3>
-                        <div className="text-2xl sm:text-3xl font-extrabold text-white">12,482</div>
+                        <div className="text-2xl sm:text-3xl font-extrabold text-white">{matches.length > 0 ? '12,482' : '0'}</div>
                         <div className="text-xs text-emerald-400 flex items-center gap-1 mt-2 font-medium">
                             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
-                            +2,149 this week
+                            {matches.length > 0 ? '+2,149 this week' : 'Awaiting initialization'}
                         </div>
                     </div>
 
                     <div className="glass-panel p-5 sm:p-6 rounded-2xl border-white/5 border-l-2 border-l-rose-500 relative overflow-hidden">
                         <h3 className="text-gray-400 text-sm font-medium mb-1">Active Matches</h3>
-                        <div className="text-2xl sm:text-3xl font-extrabold text-white">14</div>
+                        <div className="text-2xl sm:text-3xl font-extrabold text-white">{matches.filter(m => m.status !== 'Successfully Removed').length}</div>
                         <div className="text-xs text-rose-400 flex items-center gap-1 mt-2 font-medium">
-                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-                            3 high confidence today
+                            {matches.filter(m => m.status !== 'Successfully Removed').length > 0 ? (
+                                <>
+                                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                                    High confidence matches found
+                                </>
+                            ) : (
+                                <span className="text-gray-500">System baseline clear</span>
+                            )}
                         </div>
                     </div>
 
                     <div className="glass-panel p-5 sm:p-6 rounded-2xl border-white/5 relative overflow-hidden group hover:border-indigo-500/30 transition-colors">
                         <h3 className="text-gray-400 text-sm font-medium mb-1">DMCA Takedowns Sent</h3>
-                        <div className="text-2xl sm:text-3xl font-extrabold text-white">42</div>
+                        <div className="text-2xl sm:text-3xl font-extrabold text-white">{matches.length > 0 ? '42' : '0'}</div>
                         <div className="text-xs text-indigo-400 flex items-center gap-1 mt-2 font-medium">
                             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                            Processing 14 pending
+                            {matches.length > 0 ? 'Processing 14 pending' : 'No active dispatches'}
                         </div>
                     </div>
 
                     <div className="glass-panel p-5 sm:p-6 rounded-2xl border-white/5 relative overflow-hidden group hover:border-indigo-500/30 transition-colors">
                         <h3 className="text-gray-400 text-sm font-medium mb-1">Success Rate</h3>
-                        <div className="text-2xl sm:text-3xl font-extrabold text-white">88%</div>
+                        <div className="text-2xl sm:text-3xl font-extrabold text-white">{matches.length > 0 ? '88%' : '100%'}</div>
                         <div className="text-xs text-emerald-400 flex items-center gap-1 mt-2 font-medium">
-                            Avg. removal time: 3.2 days
+                            {matches.length > 0 ? 'Avg. removal time: 3.2 days' : 'Awaiting first action'}
                         </div>
                     </div>
                 </div>
