@@ -1,4 +1,5 @@
 'use client';
+import { getStorageKey } from '@/utils/storage';
 
 import {useState, useRef, useEffect} from 'react';
 import Link from 'next/link';
@@ -15,17 +16,17 @@ export default function BiometricsPage() {
 
     // Load from local storage on mount
     useEffect(() => {
-        const savedVectors = localStorage.getItem('aegis_biometric_vectors');
+        const savedVectors = localStorage.getItem(getStorageKey('aegis_biometric_vectors'));
         if (savedVectors) {
             try {setVectors(JSON.parse(savedVectors));} catch (e) {}
         }
 
-        const savedWhitelist = localStorage.getItem('aegis_whitelist');
+        const savedWhitelist = localStorage.getItem(getStorageKey('aegis_whitelist'));
         if (savedWhitelist) {
             try {setWhitelist(JSON.parse(savedWhitelist));} catch (e) {}
         }
 
-        const savedThreshold = localStorage.getItem('aegis_match_threshold');
+        const savedThreshold = localStorage.getItem(getStorageKey('aegis_match_threshold'));
         if (savedThreshold) {
             try {setMatchThreshold(Number(savedThreshold));} catch (e) {}
         }
@@ -36,9 +37,9 @@ export default function BiometricsPage() {
     // Save to local storage whenever vectors, whitelist, or threshold change
     useEffect(() => {
         if (hasLoaded) {
-            localStorage.setItem('aegis_biometric_vectors', JSON.stringify(vectors));
-            localStorage.setItem('aegis_whitelist', JSON.stringify(whitelist));
-            localStorage.setItem('aegis_match_threshold', matchThreshold.toString());
+            localStorage.setItem(getStorageKey('aegis_biometric_vectors'), JSON.stringify(vectors));
+            localStorage.setItem(getStorageKey('aegis_whitelist'), JSON.stringify(whitelist));
+            localStorage.setItem(getStorageKey('aegis_match_threshold'), matchThreshold.toString());
         }
     }, [vectors, whitelist, matchThreshold, hasLoaded]);
 

@@ -1,4 +1,5 @@
 'use client';
+import { getStorageKey } from '@/utils/storage';
 
 import Link from 'next/link';
 import {usePathname, useRouter} from 'next/navigation';
@@ -12,13 +13,13 @@ export function Sidebar() {
     const [unblurAll, setUnblurAll] = useState(false);
 
     useEffect(() => {
-        setUnblurAll(localStorage.getItem('aegis_unblur_all') === 'true');
+        setUnblurAll(localStorage.getItem(getStorageKey('aegis_unblur_all')) === 'true');
     }, []);
 
     const toggleUnblurAll = () => {
         const newValue = !unblurAll;
         setUnblurAll(newValue);
-        localStorage.setItem('aegis_unblur_all', String(newValue));
+        localStorage.setItem(getStorageKey('aegis_unblur_all'), String(newValue));
         // Dispatch event so other components can react instantly in the same tab
         window.dispatchEvent(new Event('aegis_settings_changed'));
     };
@@ -33,7 +34,7 @@ export function Sidebar() {
 
     useEffect(() => {
         // Run once on mount
-        const saved = localStorage.getItem('aegis_scan_results');
+        const saved = localStorage.getItem(getStorageKey('aegis_scan_results'));
         if (saved) {
             try {
                 const parsed = JSON.parse(saved);
@@ -45,7 +46,7 @@ export function Sidebar() {
 
         // Listen for standard storage events (if changed in another tab)
         const handleStorageChange = (e: StorageEvent) => {
-            if (e.key === 'aegis_scan_results' && e.newValue) {
+            if (e.key === getStorageKey('aegis_scan_results') && e.newValue) {
                 try {
                     const parsed = JSON.parse(e.newValue);
                     setMatchesCount(parsed.length);
@@ -58,7 +59,7 @@ export function Sidebar() {
         // Periodically poll for changes within the same tab, since
         // standard storage events don't trigger when modified by the same window.
         const pollInterval = setInterval(() => {
-            const raw = localStorage.getItem('aegis_scan_results');
+            const raw = localStorage.getItem(getStorageKey('aegis_scan_results'));
             if (raw) {
                 try {
                     const p = JSON.parse(raw);

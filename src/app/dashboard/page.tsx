@@ -1,4 +1,5 @@
 'use client';
+import { getStorageKey } from '@/utils/storage';
 
 import {useState, useEffect} from 'react';
 import Link from 'next/link';
@@ -24,7 +25,7 @@ function MatchRow({match, onDismiss}: MatchRowProps) {
 
     useEffect(() => {
         const checkUnblur = () => {
-            const unblurAll = localStorage.getItem('aegis_unblur_all') === 'true';
+            const unblurAll = localStorage.getItem(getStorageKey('aegis_unblur_all')) === 'true';
             setIsBlurred(!unblurAll);
         };
 
@@ -132,14 +133,14 @@ export default function DashboardPage() {
     const [scanError, setScanError] = useState<string | null>(null);
 
     useEffect(() => {
-        const savedVectors = localStorage.getItem('aegis_biometric_vectors');
+        const savedVectors = localStorage.getItem(getStorageKey('aegis_biometric_vectors'));
         if (savedVectors) {
             try {
                 setVectors(JSON.parse(savedVectors));
             } catch (e) {}
         }
 
-        const savedMatches = localStorage.getItem('aegis_scan_results');
+        const savedMatches = localStorage.getItem(getStorageKey('aegis_scan_results'));
         if (savedMatches) {
             try {
                 setMatches(JSON.parse(savedMatches));
@@ -155,9 +156,9 @@ export default function DashboardPage() {
         if (matchToRemove) {
             try {
                 const imageUrl = matchToRemove.thumbnail || matchToRemove.url;
-                const existingList = JSON.parse(localStorage.getItem('aegis_safe_images') || '[]');
+                const existingList = JSON.parse(localStorage.getItem(getStorageKey('aegis_safe_images')) || '[]');
                 if (!existingList.includes(imageUrl)) {
-                    localStorage.setItem('aegis_safe_images', JSON.stringify([...existingList, imageUrl]));
+                    localStorage.setItem(getStorageKey('aegis_safe_images'), JSON.stringify([...existingList, imageUrl]));
                 }
             } catch (e) {}
         }
@@ -165,7 +166,7 @@ export default function DashboardPage() {
         // Remove from active state
         const updated = matches.filter(m => m.id !== id);
         setMatches(updated);
-        localStorage.setItem('aegis_scan_results', JSON.stringify(updated));
+        localStorage.setItem(getStorageKey('aegis_scan_results'), JSON.stringify(updated));
     }
 
     const handleStartScan = async () => {
@@ -196,11 +197,11 @@ export default function DashboardPage() {
             // Map python output to UI match objects
             // The python script returns { url, score, tag }
             // Apply Whitelist and Confidence Threshold Filtering
-            const rawWhitelist = localStorage.getItem('aegis_whitelist');
+            const rawWhitelist = localStorage.getItem(getStorageKey('aegis_whitelist'));
             const whitelist: string[] = rawWhitelist ? JSON.parse(rawWhitelist) : [];
-            const rawSafeImages = localStorage.getItem('aegis_safe_images');
+            const rawSafeImages = localStorage.getItem(getStorageKey('aegis_safe_images'));
             const safeImages: string[] = rawSafeImages ? JSON.parse(rawSafeImages) : [];
-            const rawThreshold = localStorage.getItem('aegis_match_threshold');
+            const rawThreshold = localStorage.getItem(getStorageKey('aegis_match_threshold'));
             const threshold = rawThreshold ? Number(rawThreshold) : 75;
 
             const filteredMatches = (data.matches || []).filter((m: any) => {
@@ -234,7 +235,7 @@ export default function DashboardPage() {
             if (mappedMatches.length > 0) {
                 setMatches(prev => {
                     const newMatches = [...mappedMatches, ...prev];
-                    localStorage.setItem('aegis_scan_results', JSON.stringify(newMatches));
+                    localStorage.setItem(getStorageKey('aegis_scan_results'), JSON.stringify(newMatches));
                     return newMatches;
                 });
             } else {

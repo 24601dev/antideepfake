@@ -1,4 +1,5 @@
 'use client';
+import { getStorageKey } from '@/utils/storage';
 
 import {useState, useRef} from 'react';
 
@@ -54,11 +55,11 @@ export default function ThreatScanner() {
                 if (!swarmResponse.ok) throw new Error(swarmData.error || "Swarm scanning failed.");
 
                 // Apply Whitelist and Confidence Threshold Filtering
-                const rawWhitelist = localStorage.getItem('aegis_whitelist');
+                const rawWhitelist = localStorage.getItem(getStorageKey('aegis_whitelist'));
                 const whitelist: string[] = rawWhitelist ? JSON.parse(rawWhitelist) : [];
-                const rawSafeImages = localStorage.getItem('aegis_safe_images');
+                const rawSafeImages = localStorage.getItem(getStorageKey('aegis_safe_images'));
                 const safeImages: string[] = rawSafeImages ? JSON.parse(rawSafeImages) : [];
-                const rawThreshold = localStorage.getItem('aegis_match_threshold');
+                const rawThreshold = localStorage.getItem(getStorageKey('aegis_match_threshold'));
                 const threshold = rawThreshold ? Number(rawThreshold) : 75;
 
                 const filteredMatches = (swarmData.matches || []).filter((m: any) => {
@@ -92,7 +93,7 @@ export default function ThreatScanner() {
 
                 // Store globally so the "Active Threat Feed" page picks it up!
                 try {
-                    localStorage.setItem('aegis_scan_results', JSON.stringify(mappedMatches));
+                    localStorage.setItem(getStorageKey('aegis_scan_results'), JSON.stringify(mappedMatches));
                 } catch (e) {}
 
                 setGroupedMatches([]); // no longer used

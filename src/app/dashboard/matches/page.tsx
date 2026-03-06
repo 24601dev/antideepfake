@@ -1,4 +1,5 @@
 'use client';
+import { getStorageKey } from '@/utils/storage';
 
 import {useState, useEffect} from 'react';
 import Link from 'next/link';
@@ -48,7 +49,7 @@ function EvidenceCard({match, onDismiss, onStatusChange}: EvidenceCardProps) {
 
     useEffect(() => {
         const checkUnblur = () => {
-            const unblurAll = localStorage.getItem('aegis_unblur_all') === 'true';
+            const unblurAll = localStorage.getItem(getStorageKey('aegis_unblur_all')) === 'true';
             if (unblurAll) {
                 setIsBlurred(false);
             } else {
@@ -206,7 +207,7 @@ export default function MatchesPage() {
     const [isBulkSubmitting, setIsBulkSubmitting] = useState(false);
 
     useEffect(() => {
-        const saved = localStorage.getItem('aegis_scan_results');
+        const saved = localStorage.getItem(getStorageKey('aegis_scan_results'));
         if (saved) {
             try {
                 const parsed = JSON.parse(saved);
@@ -224,9 +225,9 @@ export default function MatchesPage() {
             // 1. Add it to safe images list instead of domain whitelist
             try {
                 const imageUrl = matchToRemove.thumbnail || matchToRemove.url;
-                const existingList = JSON.parse(localStorage.getItem('aegis_safe_images') || '[]');
+                const existingList = JSON.parse(localStorage.getItem(getStorageKey('aegis_safe_images')) || '[]');
                 if (!existingList.includes(imageUrl)) {
-                    localStorage.setItem('aegis_safe_images', JSON.stringify([...existingList, imageUrl]));
+                    localStorage.setItem(getStorageKey('aegis_safe_images'), JSON.stringify([...existingList, imageUrl]));
                 }
             } catch (e) {
                 // Ignore parsing errors
@@ -236,13 +237,13 @@ export default function MatchesPage() {
         // 2. Remove from active state
         const updated = matches.filter(m => m.id !== id);
         setMatches(updated);
-        localStorage.setItem('aegis_scan_results', JSON.stringify(updated));
+        localStorage.setItem(getStorageKey('aegis_scan_results'), JSON.stringify(updated));
     }
 
     const handleStatusChange = (id: string, newStatus: string) => {
         setMatches(prev => {
             const updated = prev.map(m => m.id === id ? {...m, status: newStatus} : m);
-            localStorage.setItem('aegis_scan_results', JSON.stringify(updated));
+            localStorage.setItem(getStorageKey('aegis_scan_results'), JSON.stringify(updated));
             return updated;
         });
     }
@@ -250,7 +251,7 @@ export default function MatchesPage() {
     const handleClearAll = () => {
         if (confirm("Are you sure you want to dismiss all displayed matches?")) {
             setMatches([]);
-            localStorage.setItem('aegis_scan_results', JSON.stringify([]));
+            localStorage.setItem(getStorageKey('aegis_scan_results'), JSON.stringify([]));
         }
     };
 
@@ -262,7 +263,7 @@ export default function MatchesPage() {
         setTimeout(() => {
             setMatches(prev => {
                 const updated = prev.map(m => m.status === 'Action Required' ? {...m, status: 'DMCA Pending'} : m);
-                localStorage.setItem('aegis_scan_results', JSON.stringify(updated));
+                localStorage.setItem(getStorageKey('aegis_scan_results'), JSON.stringify(updated));
                 return updated;
             });
             setIsBulkSubmitting(false);
