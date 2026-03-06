@@ -1,5 +1,5 @@
 'use client';
-import { getStorageKey } from '@/utils/storage';
+import {getStorageKey} from '@/utils/storage';
 
 import {useState, useRef, useEffect} from 'react';
 import Link from 'next/link';
@@ -56,9 +56,33 @@ export default function BiometricsPage() {
 
             try {
                 const file = e.target.files[0];
+
+                // Compress image before uploading to avoid 413 Payload Too Large
                 const base64str = await new Promise<string>((resolve, reject) => {
                     const reader = new FileReader();
-                    reader.onload = () => resolve(reader.result as string);
+                    reader.onload = (e) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            let width = img.width;
+                            let height = img.height;
+                            const MAX_WIDTH = 800; // Optimal size for facial vectors
+
+                            if (width > MAX_WIDTH) {
+                                height = Math.round((height * MAX_WIDTH) / width);
+                                width = MAX_WIDTH;
+                            }
+
+                            canvas.width = width;
+                            canvas.height = height;
+                            const ctx = canvas.getContext('2d');
+                            ctx?.drawImage(img, 0, 0, width, height);
+                            // Convert to JPEG with 80% quality to crush file size
+                            resolve(canvas.toDataURL('image/jpeg', 0.8));
+                        };
+                        img.onerror = reject;
+                        img.src = e.target?.result as string;
+                    };
                     reader.onerror = reject;
                     reader.readAsDataURL(file);
                 });
@@ -69,9 +93,19 @@ export default function BiometricsPage() {
                     body: JSON.stringify({image: base64str})
                 });
 
-                const data = await response.json();
+                const rawText = await response.text();
 
-                if (!response.ok) throw new Error(data.error || 'Failed to vectorize');
+                let data = null;
+                try {
+                    data = JSON.parse(rawText);
+                } catch (parseError) {
+                    if (rawText.includes('Too Large')) {
+                        throw new Error('Image is still too large after compression. Please use a smaller photo.');
+                    }
+                    throw new Error(`Server Error: ${rawText.substring(0, 50)}...`);
+                }
+
+                if (!response.ok) throw new Error(data?.error || 'Failed to vectorize');
 
                 const newVector = {
                     id: `vec_${Math.random().toString(36).substring(2, 9)}`,

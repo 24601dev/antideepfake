@@ -1,5 +1,5 @@
 'use client';
-import { getStorageKey } from '@/utils/storage';
+import {getStorageKey} from '@/utils/storage';
 
 import {useState, useRef} from 'react';
 
@@ -23,7 +23,28 @@ export default function ThreatScanner() {
             const file = e.target.files[0];
             const base64str = await new Promise<string>((resolve, reject) => {
                 const reader = new FileReader();
-                reader.onload = (ev) => resolve(ev.target?.result as string);
+                reader.onload = (ev) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        const MAX_WIDTH = 800; // Optimal for face vectors
+
+                        if (width > MAX_WIDTH) {
+                            height = Math.round((height * MAX_WIDTH) / width);
+                            width = MAX_WIDTH;
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx?.drawImage(img, 0, 0, width, height);
+                        resolve(canvas.toDataURL('image/jpeg', 0.8));
+                    };
+                    img.onerror = reject;
+                    img.src = ev.target?.result as string;
+                };
                 reader.onerror = reject;
                 reader.readAsDataURL(file);
             });
@@ -39,8 +60,19 @@ export default function ThreatScanner() {
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({image: base64str})
                 });
-                const recogData = await recogResponse.json();
-                if (!recogResponse.ok) throw new Error(recogData.error || "Failed to vectorize evidence.");
+
+                const recogText = await recogResponse.text();
+                let recogData = null;
+                try {
+                    recogData = JSON.parse(recogText);
+                } catch (e) {
+                    if (recogText.includes('Too Large')) {
+                        throw new Error('Image is still too large after compression. Please use a smaller photo.');
+                    }
+                    throw new Error(`Server Error: ${recogText.substring(0, 50)}...`);
+                }
+
+                if (!recogResponse.ok) throw new Error(recogData?.error || "Failed to vectorize evidence.");
 
                 // Step 2: Deploy Swarm to find matches
                 const swarmResponse = await fetch('/api/swarm', {
