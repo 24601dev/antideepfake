@@ -149,15 +149,15 @@ export default function DashboardPage() {
         }
     }, []);
 
-    const handleDismissMatch = (id: number, urlDomain: string) => {
+    const handleDismissMatch = (id: number) => {
         // Find the match
         const matchToRemove = matches.find(m => m.id === id);
         if (matchToRemove) {
             try {
-                const domain = new URL(matchToRemove.url).hostname;
-                const existingList = JSON.parse(localStorage.getItem('aegis_whitelist') || '[]');
-                if (!existingList.includes(domain)) {
-                    localStorage.setItem('aegis_whitelist', JSON.stringify([...existingList, domain]));
+                const imageUrl = matchToRemove.thumbnail || matchToRemove.url;
+                const existingList = JSON.parse(localStorage.getItem('aegis_safe_images') || '[]');
+                if (!existingList.includes(imageUrl)) {
+                    localStorage.setItem('aegis_safe_images', JSON.stringify([...existingList, imageUrl]));
                 }
             } catch (e) {}
         }
@@ -198,15 +198,23 @@ export default function DashboardPage() {
             // Apply Whitelist and Confidence Threshold Filtering
             const rawWhitelist = localStorage.getItem('aegis_whitelist');
             const whitelist: string[] = rawWhitelist ? JSON.parse(rawWhitelist) : [];
+            const rawSafeImages = localStorage.getItem('aegis_safe_images');
+            const safeImages: string[] = rawSafeImages ? JSON.parse(rawSafeImages) : [];
             const rawThreshold = localStorage.getItem('aegis_match_threshold');
             const threshold = rawThreshold ? Number(rawThreshold) : 75;
 
             const filteredMatches = (data.matches || []).filter((m: any) => {
                 const matchUrl = (m.url || '').toLowerCase();
                 const matchSource = (m.source || '').toLowerCase();
+                const matchThumb = (m.thumbnail || '').toLowerCase();
+
                 const isWhitelisted = whitelist.some(w => matchUrl.includes(w) || matchSource.includes(w));
+                const isSafeImage = safeImages.some(safe => {
+                    const lSafe = safe.toLowerCase();
+                    return lSafe === matchUrl || lSafe === matchThumb;
+                });
                 const meetsThreshold = m.score === undefined || m.score === null || m.score >= threshold;
-                return !isWhitelisted && meetsThreshold;
+                return !isWhitelisted && !isSafeImage && meetsThreshold;
             });
 
             const mappedMatches = filteredMatches.map((m: any, idx: number) => ({

@@ -217,18 +217,16 @@ export default function MatchesPage() {
         }
     }, []);
 
-    const handleDismissMatch = (id: string, urlDomain: string) => {
+    const handleDismissMatch = (id: string) => {
         // Find the match
         const matchToRemove = matches.find(m => m.id === id);
         if (matchToRemove) {
-            // 1. Add it to whitelist if desired
-            // In a perfect world we might ask the user if they want to whitelist this entire domain, or just this exact URL
-            // For now we extract the base domain
+            // 1. Add it to safe images list instead of domain whitelist
             try {
-                const domain = new URL(matchToRemove.url).hostname;
-                const existingList = JSON.parse(localStorage.getItem('aegis_whitelist') || '[]');
-                if (!existingList.includes(domain)) {
-                    localStorage.setItem('aegis_whitelist', JSON.stringify([...existingList, domain]));
+                const imageUrl = matchToRemove.thumbnail || matchToRemove.url;
+                const existingList = JSON.parse(localStorage.getItem('aegis_safe_images') || '[]');
+                if (!existingList.includes(imageUrl)) {
+                    localStorage.setItem('aegis_safe_images', JSON.stringify([...existingList, imageUrl]));
                 }
             } catch (e) {
                 // Ignore parsing errors

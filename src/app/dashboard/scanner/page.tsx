@@ -56,15 +56,23 @@ export default function ThreatScanner() {
                 // Apply Whitelist and Confidence Threshold Filtering
                 const rawWhitelist = localStorage.getItem('aegis_whitelist');
                 const whitelist: string[] = rawWhitelist ? JSON.parse(rawWhitelist) : [];
+                const rawSafeImages = localStorage.getItem('aegis_safe_images');
+                const safeImages: string[] = rawSafeImages ? JSON.parse(rawSafeImages) : [];
                 const rawThreshold = localStorage.getItem('aegis_match_threshold');
                 const threshold = rawThreshold ? Number(rawThreshold) : 75;
 
                 const filteredMatches = (swarmData.matches || []).filter((m: any) => {
                     const matchUrl = (m.url || '').toLowerCase();
                     const matchSource = (m.source || '').toLowerCase();
+                    const matchThumb = (m.thumbnail || '').toLowerCase();
+
                     const isWhitelisted = whitelist.some(w => matchUrl.includes(w) || matchSource.includes(w));
+                    const isSafeImage = safeImages.some(safe => {
+                        const lSafe = safe.toLowerCase();
+                        return lSafe === matchUrl || lSafe === matchThumb;
+                    });
                     const meetsThreshold = m.score === undefined || m.score === null || m.score >= threshold;
-                    return !isWhitelisted && meetsThreshold;
+                    return !isWhitelisted && !isSafeImage && meetsThreshold;
                 });
 
                 const mappedMatches = filteredMatches.map((m: any, idx: number) => ({
