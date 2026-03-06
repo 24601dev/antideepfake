@@ -12,11 +12,12 @@ interface MatchRowProps {
         score: number | null;
         status: string;
         thumbnail?: string;
+        source?: string;
     };
+    onDismiss?: (id: number, urlDomain: string) => void;
 }
 
-// Extracted Match Row component to handle its own loading/status state for the DMCA button
-function MatchRow({match}: MatchRowProps) {
+function MatchRow({match, onDismiss}: MatchRowProps) {
     const [localStatus, setLocalStatus] = useState(match.status);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -26,6 +27,12 @@ function MatchRow({match}: MatchRowProps) {
             setIsSubmitting(false);
             setLocalStatus('DMCA Pending');
         }, 1500);
+    };
+
+    const handleDismiss = () => {
+        if (confirm("Dismiss this match? It will be permanently removed from this list.")) {
+            if (onDismiss) onDismiss(match.id, match.url || match.source || '');
+        }
     };
 
     return (
@@ -78,13 +85,22 @@ function MatchRow({match}: MatchRowProps) {
             </td>
             <td className="px-4 sm:px-6 py-4">
                 {localStatus === 'Action Required' ? (
-                    <button
-                        onClick={handleSendDMCA}
-                        disabled={isSubmitting}
-                        className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded shadow disabled:opacity-50 transition-all flex items-center gap-2 whitespace-nowrap"
-                    >
-                        {isSubmitting ? 'Sending...' : 'Send DMCA'}
-                    </button>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={handleSendDMCA}
+                            disabled={isSubmitting}
+                            className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded shadow disabled:opacity-50 transition-all flex items-center gap-2 whitespace-nowrap"
+                        >
+                            {isSubmitting ? 'Sending...' : 'Send DMCA'}
+                        </button>
+                        <button
+                            onClick={handleDismiss}
+                            className="px-2 py-1.5 text-gray-400 hover:text-white hover:bg-white/5 rounded text-xs font-semibold transition-colors"
+                            title="Dismiss match"
+                        >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                    </div>
                 ) : localStatus === 'DMCA Pending' ? (
                     <button className="px-3 py-1.5 bg-white/5 text-gray-400 hover:text-white border border-white/10 text-xs font-bold rounded transition-all whitespace-nowrap">
                         View Logs
@@ -120,6 +136,25 @@ export default function DashboardPage() {
             setMatches([{id: 1, tag: 'RESOLVED', url: 'tg-groups-hub[.]ru', date: 'Removed 3 days ago', score: null, status: 'Successfully Removed'}]);
         }
     }, []);
+
+    const handleDismissMatch = (id: number, urlDomain: string) => {
+        // Find the match
+        const matchToRemove = matches.find(m => m.id === id);
+        if (matchToRemove) {
+            try {
+                const domain = new URL(matchToRemove.url).hostname;
+                const existingList = JSON.parse(localStorage.getItem('aegis_whitelist') || '[]');
+                if (!existingList.includes(domain)) {
+                    localStorage.setItem('aegis_whitelist', JSON.stringify([...existingList, domain]));
+                }
+            } catch (e) {}
+        }
+
+        // Remove from active state
+        const updated = matches.filter(m => m.id !== id);
+        setMatches(updated);
+        localStorage.setItem('aegis_scan_results', JSON.stringify(updated));
+    }
 
     const handleStartScan = async () => {
         if (vectors.length === 0) {
@@ -307,7 +342,7 @@ export default function DashboardPage() {
                                     </thead>
                                     <tbody className="divide-y divide-white/5">
                                         {matches.length > 0 ? matches.map((match) => (
-                                            <MatchRow key={match.id} match={match} />
+                                            <MatchRow key={match.id} match={match} onDismiss={handleDismissMatch} />
                                         )) : (
                                             <tr>
                                                 <td colSpan={4} className="px-6 py-8 text-center text-gray-500 text-sm">
