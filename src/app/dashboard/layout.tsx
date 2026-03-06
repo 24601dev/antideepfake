@@ -2,6 +2,7 @@ import {Sidebar} from '@/components/dashboard/Sidebar';
 import {MobileHeader} from '@/components/dashboard/MobileHeader';
 import {createClient} from '@/utils/supabase/server';
 import {cookies} from 'next/headers';
+import UserSessionSync from '@/components/dashboard/UserSessionSync';
 
 export default async function DashboardLayout({
     children,
@@ -32,11 +33,7 @@ export default async function DashboardLayout({
 
     return (
         <div className="min-h-screen bg-[#050505] text-gray-200 font-sans selection:bg-indigo-500/30 flex flex-col md:flex-row">
-            <script
-                dangerouslySetInnerHTML={{
-                    __html: `localStorage.setItem('aegis_current_user', '${userEmail}'); localStorage.setItem('aegis_user_name', '${userName.replace(/'/g, "\\'")}');`
-                }}
-            />
+            <UserSessionSync userEmail={userEmail} userName={userName} />
             <MobileHeader />
             <Sidebar />
 
