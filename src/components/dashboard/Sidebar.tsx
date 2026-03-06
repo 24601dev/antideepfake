@@ -30,7 +30,6 @@ export function Sidebar() {
     const handleSignOut = async () => {
         // Clear the dev backdoor cookie
         document.cookie = "dev_backdoor=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
-        localStorage.removeItem('aegis_current_user');
 
         await signOut();
     };
