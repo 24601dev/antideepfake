@@ -20,6 +20,18 @@ interface MatchRowProps {
 function MatchRow({match, onDismiss}: MatchRowProps) {
     const [localStatus, setLocalStatus] = useState(match.status);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isBlurred, setIsBlurred] = useState(true);
+
+    useEffect(() => {
+        const checkUnblur = () => {
+            const unblurAll = localStorage.getItem('aegis_unblur_all') === 'true';
+            setIsBlurred(!unblurAll);
+        };
+
+        checkUnblur();
+        window.addEventListener('aegis_settings_changed', checkUnblur);
+        return () => window.removeEventListener('aegis_settings_changed', checkUnblur);
+    }, []);
 
     const handleSendDMCA = () => {
         setIsSubmitting(true);
@@ -41,7 +53,7 @@ function MatchRow({match, onDismiss}: MatchRowProps) {
                 <div className="flex items-center gap-3 sm:gap-4">
                     <div className="w-10 h-10 sm:w-16 sm:h-16 shrink-0 rounded flex items-center justify-center overflow-hidden border border-white/10 relative group bg-gray-900 cursor-pointer">
                         {match.thumbnail ? (
-                            <img src={match.thumbnail} className="w-full h-full object-cover blur-md group-hover:blur-none transition-all duration-300 pointer-events-none" alt="Evidence Thumbnail" />
+                            <img src={match.thumbnail} className={`w-full h-full object-cover transition-all duration-300 pointer-events-none ${isBlurred ? 'blur-md group-hover:blur-none' : 'blur-none'}`} alt="Evidence Thumbnail" />
                         ) : (
                             <span className="text-[10px] sm:text-xs text-rose-500 font-bold mix-blend-difference z-10">FLAGGED</span>
                         )}

@@ -9,6 +9,19 @@ export function Sidebar() {
     const router = useRouter();
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [autoDMCA, setAutoDMCA] = useState(false);
+    const [unblurAll, setUnblurAll] = useState(false);
+
+    useEffect(() => {
+        setUnblurAll(localStorage.getItem('aegis_unblur_all') === 'true');
+    }, []);
+
+    const toggleUnblurAll = () => {
+        const newValue = !unblurAll;
+        setUnblurAll(newValue);
+        localStorage.setItem('aegis_unblur_all', String(newValue));
+        // Dispatch event so other components can react instantly in the same tab
+        window.dispatchEvent(new Event('aegis_settings_changed'));
+    };
 
     const handleSignOut = () => {
         // Clear the dev backdoor cookie
@@ -148,6 +161,17 @@ export function Sidebar() {
                                 {/* Toggle switch */}
                                 <div className={`w-8 h-4 rounded-full flex items-center p-0.5 transition-colors ${autoDMCA ? 'bg-indigo-500' : 'bg-gray-700'}`}>
                                     <div className={`w-3 h-3 bg-white rounded-full transition-transform shadow-sm ${autoDMCA ? 'translate-x-4' : 'translate-x-0'}`}></div>
+                                </div>
+                            </div>
+
+                            <div className="px-3 py-2 flex items-center justify-between hover:bg-white/5 rounded-lg transition-colors cursor-pointer" onClick={toggleUnblurAll}>
+                                <div>
+                                    <div className="text-sm font-medium text-white">Unblur All Evidence</div>
+                                    <div className="text-[10px] text-gray-500 mt-0.5">Show explicit thumbnails by default</div>
+                                </div>
+                                {/* Toggle switch */}
+                                <div className={`w-8 h-4 rounded-full flex items-center p-0.5 transition-colors ${unblurAll ? 'bg-indigo-500' : 'bg-gray-700'}`}>
+                                    <div className={`w-3 h-3 bg-white rounded-full transition-transform shadow-sm ${unblurAll ? 'translate-x-4' : 'translate-x-0'}`}></div>
                                 </div>
                             </div>
 

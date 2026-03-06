@@ -46,6 +46,21 @@ function EvidenceCard({match, onDismiss, onStatusChange}: EvidenceCardProps) {
     const [localStatus, setLocalStatus] = useState(match.status);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    useEffect(() => {
+        const checkUnblur = () => {
+            const unblurAll = localStorage.getItem('aegis_unblur_all') === 'true';
+            if (unblurAll) {
+                setIsBlurred(false);
+            } else {
+                setIsBlurred(true);
+            }
+        };
+
+        checkUnblur();
+        window.addEventListener('aegis_settings_changed', checkUnblur);
+        return () => window.removeEventListener('aegis_settings_changed', checkUnblur);
+    }, []);
+
     const handleSendDMCA = () => {
         setIsSubmitting(true);
         // Simulate API delay
