@@ -37,7 +37,7 @@ export async function signup(formData: FormData) {
     const firstName = formData.get('firstName') as string
     const lastName = formData.get('lastName') as string
 
-    const {error} = await supabase.auth.signUp({
+    const {data, error} = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -50,6 +50,10 @@ export async function signup(formData: FormData) {
 
     if (error) {
         return {error: error.message}
+    }
+
+    if (data?.user && !data?.session) {
+        return {error: "Check your email for the confirmation link to complete registration."};
     }
 
     revalidatePath('/', 'layout')
