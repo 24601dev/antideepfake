@@ -53,7 +53,17 @@ export default function ThreatScanner() {
                 const swarmData = await swarmResponse.json();
                 if (!swarmResponse.ok) throw new Error(swarmData.error || "Swarm scanning failed.");
 
-                const mappedMatches = (swarmData.matches || []).map((m: any, idx: number) => ({
+                // Apply Whitelist Filtering
+                const rawWhitelist = localStorage.getItem('aegis_whitelist');
+                const whitelist: string[] = rawWhitelist ? JSON.parse(rawWhitelist) : [];
+
+                const filteredMatches = (swarmData.matches || []).filter((m: any) => {
+                    const matchUrl = (m.url || '').toLowerCase();
+                    const matchSource = (m.source || '').toLowerCase();
+                    return !whitelist.some(w => matchUrl.includes(w) || matchSource.includes(w));
+                });
+
+                const mappedMatches = filteredMatches.map((m: any, idx: number) => ({
                     id: Date.now() + idx,
                     tag: m.tag,
                     url: m.url,

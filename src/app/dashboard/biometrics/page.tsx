@@ -8,17 +8,20 @@ export default function BiometricsPage() {
     const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [hasLoaded, setHasLoaded] = useState(false);
+    const [whitelist, setWhitelist] = useState<string[]>([]);
+    const [newWhitelistEntry, setNewWhitelistEntry] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Load from local storage on mount
     useEffect(() => {
-        const saved = localStorage.getItem('aegis_biometric_vectors');
-        if (saved) {
-            try {
-                setVectors(JSON.parse(saved));
-            } catch (e) {
-                console.error("Failed to parse saved vectors");
-            }
+        const savedVectors = localStorage.getItem('aegis_biometric_vectors');
+        if (savedVectors) {
+            try {setVectors(JSON.parse(savedVectors));} catch (e) {}
+        }
+
+        const savedWhitelist = localStorage.getItem('aegis_whitelist');
+        if (savedWhitelist) {
+            try {setWhitelist(JSON.parse(savedWhitelist));} catch (e) {}
         }
         setHasLoaded(true);
     }, []);
@@ -27,8 +30,9 @@ export default function BiometricsPage() {
     useEffect(() => {
         if (hasLoaded) {
             localStorage.setItem('aegis_biometric_vectors', JSON.stringify(vectors));
+            localStorage.setItem('aegis_whitelist', JSON.stringify(whitelist));
         }
-    }, [vectors, hasLoaded]);
+    }, [vectors, whitelist, hasLoaded]);
 
     const handleUploadClick = () => {
         if (!isUploading) {
@@ -87,6 +91,22 @@ export default function BiometricsPage() {
             setVectors(prev => prev.filter(vec => vec.id !== id));
         }
     };
+
+    const handleAddWhitelist = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (newWhitelistEntry.trim()) {
+            const cleanEntry = newWhitelistEntry.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/\/$/, '');
+            if (!whitelist.includes(cleanEntry)) {
+                setWhitelist(prev => [...prev, cleanEntry]);
+            }
+            setNewWhitelistEntry('');
+        }
+    };
+
+    const handleRemoveWhitelist = (entry: string) => {
+        setWhitelist(prev => prev.filter(w => w !== entry));
+    };
+
     return (
         <>
             <header className="h-20 border-b border-white/5 px-4 sm:px-8 flex items-center justify-between sticky top-0 bg-[#050505]/80 backdrop-blur-md z-30">
@@ -139,7 +159,7 @@ export default function BiometricsPage() {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
 
                     {error && (
                         <div className="col-span-full p-4 mb-2 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm flex items-center gap-3">
@@ -244,6 +264,47 @@ export default function BiometricsPage() {
                     </div>
 
                 </div>
+
+                {/* Whitelist Settings */}
+                <div className="glass-panel p-6 rounded-2xl border border-white/10">
+                    <h3 className="text-xl font-bold text-white mb-2">Safe Domains & Authorized Profiles</h3>
+                    <p className="text-sm text-gray-400 mb-6">
+                        Prevent AegisLens from flagging your own content. Add your official social media handles (e.g. <code className="text-indigo-400 font-mono">instagram.com/hyoon</code>) or domains. The Swarm engine will automatically ignore any matches that originate from these exact locations.
+                    </p>
+
+                    <form onSubmit={handleAddWhitelist} className="flex flex-col sm:flex-row gap-4 mb-6">
+                        <input
+                            type="text"
+                            value={newWhitelistEntry}
+                            onChange={(e) => setNewWhitelistEntry(e.target.value)}
+                            placeholder="e.g. twitter.com/floaromaa"
+                            className="flex-1 bg-black/50 border border-white/10 rounded-lg px-4 py-2 text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500 transition-colors"
+                        />
+                        <button
+                            type="submit"
+                            className="px-6 py-2 bg-white/10 hover:bg-white/20 text-white font-bold rounded-lg transition-colors whitespace-nowrap border border-white/10"
+                        >
+                            Add to Allowlist
+                        </button>
+                    </form>
+
+                    {whitelist.length > 0 ? (
+                        <div className="flex flex-wrap gap-2">
+                            {whitelist.map((entry, idx) => (
+                                <div key={idx} className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-4 py-1.5 text-sm text-emerald-400">
+                                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                    <span className="font-semibold tracking-wide">{entry}</span>
+                                    <button onClick={() => handleRemoveWhitelist(entry)} className="text-emerald-500/50 hover:text-rose-500 ml-1 transition-colors">
+                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-sm text-gray-500 italic">No safe domains configured. Everything is considered hostile.</div>
+                    )}
+                </div>
+
             </div>
         </>
     )
