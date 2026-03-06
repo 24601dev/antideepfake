@@ -36,7 +36,7 @@ function MatchRow({match}: MatchRowProps) {
                         {match.thumbnail ? (
                             <img src={match.thumbnail} className="w-full h-full object-cover blur-md group-hover:blur-none transition-all duration-300 pointer-events-none" alt="Evidence Thumbnail" />
                         ) : (
-                            <span className="text-[10px] sm:text-xs text-rose-500 font-bold mix-blend-difference z-10">NSFW</span>
+                            <span className="text-[10px] sm:text-xs text-rose-500 font-bold mix-blend-difference z-10">FLAGGED</span>
                         )}
                         <div className="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors flex items-center justify-center pointer-events-none">
                             <svg className="w-4 h-4 text-white opacity-50 group-hover:opacity-0 transition-opacity drop-shadow-md" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>

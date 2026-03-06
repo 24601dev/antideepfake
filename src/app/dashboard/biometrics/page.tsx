@@ -269,7 +269,7 @@ export default function BiometricsPage() {
                 <div className="glass-panel p-6 rounded-2xl border border-white/10">
                     <h3 className="text-xl font-bold text-white mb-2">Safe Domains & Authorized Profiles</h3>
                     <p className="text-sm text-gray-400 mb-6">
-                        Prevent AegisLens from flagging your own content. Add your official social media handles (e.g. <code className="text-indigo-400 font-mono">instagram.com/hyoon</code>) or domains. The Swarm engine will automatically ignore any matches that originate from these exact locations.
+                        Prevent AegisLens from flagging your own content. Add your official social media handles (e.g. <code className="text-indigo-400 font-mono">instagram.com/username</code>) or domains. The Swarm engine will automatically ignore any matches that originate from these exact locations.
                     </p>
 
                     <form onSubmit={handleAddWhitelist} className="flex flex-col sm:flex-row gap-4 mb-6">
@@ -277,7 +277,7 @@ export default function BiometricsPage() {
                             type="text"
                             value={newWhitelistEntry}
                             onChange={(e) => setNewWhitelistEntry(e.target.value)}
-                            placeholder="e.g. twitter.com/floaromaa"
+                            placeholder="e.g. twitter.com/username"
                             className="flex-1 bg-black/50 border border-white/10 rounded-lg px-4 py-2 text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500 transition-colors"
                         />
                         <button

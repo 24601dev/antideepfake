@@ -73,7 +73,7 @@ function EvidenceCard({match}: {match: any}) {
                         <svg className="w-8 h-8 text-rose-500 mb-2 drop-shadow-md" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
                         </svg>
-                        <span className="text-white font-bold text-sm tracking-widest uppercase mb-3">NSFW Evidence</span>
+                        <span className="text-white font-bold text-sm tracking-widest uppercase mb-3 text-center px-4">Suspected Deepfake</span>
                         <button
                             onClick={() => setIsBlurred(false)}
                             className="px-4 py-1.5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-full text-xs font-semibold text-white transition-all focus:outline-none focus:ring-2 focus:ring-rose-500"
@@ -205,7 +205,7 @@ export default function MatchesPage() {
             <div className="p-4 sm:p-8 flex-1 overflow-x-hidden relative max-w-5xl">
                 <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-orange-500/10 border border-orange-500/20 text-orange-400 text-sm font-medium mb-8">
                     <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-                    <p><strong>Warning:</strong> The blurred images below may contain sexually explicit or disturbing content extracted from adult deepfake forums. Please use discretion when unblurring.</p>
+                    <p><strong>Warning:</strong> The blurred images below may contain sensitive or manipulated content extracted from deepfake forums or other sources. Please use discretion when unblurring.</p>
                 </div>
 
                 <div className="space-y-6">
