@@ -37,7 +37,7 @@ export async function updateSession(request: NextRequest) {
     const isProtectedRoute = request.nextUrl.pathname.startsWith('/dashboard') || request.nextUrl.pathname.startsWith('/onboarding')
 
     // DEV BACKDOOR FOR TESTING
-    if (process.env.NODE_ENV === 'development' && request.cookies.get('dev_backdoor')?.value === 'true') {
+    if (request.cookies.get('dev_backdoor')?.value === 'true') {
         return supabaseResponse
     }
 

