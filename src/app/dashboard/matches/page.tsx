@@ -1,39 +1,9 @@
 'use client';
-import { getStorageKey } from '@/utils/storage';
+import {getStorageKey} from '@/utils/storage';
 
 import {useState, useEffect} from 'react';
 import Link from 'next/link';
 
-// Mock evidence data
-const mockMatches = [
-    {
-        id: 'm_1001',
-        url: 'forums.anon-leak[.]net/thread/v29xx',
-        date: '2 hours ago',
-        type: 'Explicit Image',
-        confidence: 98,
-        status: 'Action Required',
-        thumbnail: 'https://images.unsplash.com/photo-1516245834210-c4c142787335?q=80&w=400&auto=format&fit=crop', // Stock face/person for demo
-    },
-    {
-        id: 'm_1002',
-        url: 'image-host-77[.]biz/view/a883k1',
-        date: 'Yesterday',
-        type: 'Deepfake Video Frame',
-        confidence: 92,
-        status: 'DMCA Pending',
-        thumbnail: 'https://images.unsplash.com/photo-1579783900864-51c3127cdfb1?q=80&w=400&auto=format&fit=crop', // Abstract/blurred face for demo
-    },
-    {
-        id: 'm_1003',
-        url: 'tg-groups-hub[.]ru/c/9921',
-        date: '3 days ago',
-        type: 'Social Media Rip',
-        confidence: 85,
-        status: 'Resolved',
-        thumbnail: 'https://images.unsplash.com/photo-1544604961-1e9411dd7b29?q=80&w=400&auto=format&fit=crop', // Another face demo
-    }
-];
 
 // Reusable Evidence Card Component
 interface EvidenceCardProps {
@@ -203,7 +173,7 @@ function EvidenceCard({match, onDismiss, onStatusChange}: EvidenceCardProps) {
 }
 
 export default function MatchesPage() {
-    const [matches, setMatches] = useState<any[]>(mockMatches);
+    const [matches, setMatches] = useState<any[]>([]);
     const [isBulkSubmitting, setIsBulkSubmitting] = useState(false);
 
     useEffect(() => {

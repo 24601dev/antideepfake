@@ -1,5 +1,5 @@
 'use client';
-import { getStorageKey } from '@/utils/storage';
+import {getStorageKey} from '@/utils/storage';
 
 import {useState, useEffect} from 'react';
 import Link from 'next/link';
@@ -146,7 +146,7 @@ export default function DashboardPage() {
                 setMatches(JSON.parse(savedMatches));
             } catch (e) {}
         } else {
-            setMatches([{id: 1, tag: 'RESOLVED', url: 'tg-groups-hub[.]ru', date: 'Removed 3 days ago', score: null, status: 'Successfully Removed'}]);
+            setMatches([]);
         }
     }, []);
 
