@@ -38,7 +38,11 @@ export default function RegisterPage() {
         const result = await signup(formData);
 
         if (result?.error) {
-            setError(result.error);
+            let errorMsg = result.error;
+            if (errorMsg.toLowerCase().includes('rate limit')) {
+                errorMsg = "Email rate limit exceeded (Supabase allows 3 auth emails per hour on the free tier). You can either: 1) Use the included backdoor test account ('antideepfake' / 'antideepfake'), 2) Wait an hour, or 3) Disable 'Confirm Email' entirely in your Supabase dashboard under Authentication -> Providers.";
+            }
+            setError(errorMsg);
             setIsLoading(false);
         }
     };
